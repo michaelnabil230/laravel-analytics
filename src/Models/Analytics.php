@@ -3,6 +3,7 @@
 namespace MichaelNabil230\LaravelAnalytics\Models;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use MichaelNabil230\LaravelAnalytics\Events;
@@ -129,5 +130,27 @@ class Analytics extends Model
     public function scopePeriod($query, $from = null, $to = null)
     {
         $query->whereBetween('created_at', [$from->format('Y-m-d'), $to->format('Y-m-d')]);
+    }
+
+    /**
+     * Get the top values for a given field  
+     *
+     * @param Carbon  $from
+     * @param Carbon  $to
+     * @param string  $top
+     * @param int  $limit
+     * @param  array|mixed  $columns
+     * @return \Illuminate\Database\Eloquent\Collection<int, static>
+     */
+    public static function top($from, $to, $top, $limit = 10, $columns = ['*'])
+    {
+        return self::query()
+            ->period($from, $to)
+            ->except(['ajax', 'bots'])
+            ->addSelect(DB::raw("count('$top') as {$top}_count"))
+            ->latest($top . '_count')
+            ->groupBy($top)
+            ->limit($limit)
+            ->get($columns);
     }
 }
