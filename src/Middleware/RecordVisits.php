@@ -3,7 +3,7 @@
 namespace MichaelNabil230\LaravelAnalytics\Middleware;
 
 use Closure;
-use MichaelNabil230\LaravelAnalytics\LaravelAnalytics;
+use MichaelNabil230\LaravelAnalytics\Facades\LaravelAnalytics;
 
 class RecordVisits
 {

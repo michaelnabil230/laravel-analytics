@@ -1,0 +1,90 @@
+<?php
+
+namespace MichaelNabil230\LaravelAnalytics\Models;
+
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
+use MichaelNabil230\LaravelAnalytics\Models\Ip;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use MichaelNabil230\LaravelAnalytics\Models\Visiter;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class SessionVisiter extends Model
+{
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<string>
+     */
+    protected $fillable = [
+        'ip_id',
+        'start_at',
+        'end_at',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string,int>
+     */
+    protected $casts = [
+        'start_at' => 'datetime',
+        'end_at' => 'datetime',
+    ];
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array<string>
+     */
+    protected $appends = [
+        'time',
+    ];
+
+    /**
+     * Get the ip that owns the SessionVisiter
+     *
+     * @return BelongsTo
+     */
+    public function ip(): BelongsTo
+    {
+        return $this->belongsTo(Ip::class);
+    }
+
+    /**
+     * Get all of the visiters for the SessionVisiter
+     *
+     * @return HasMany
+     */
+    public function visiters(): HasMany
+    {
+        return $this->hasMany(Visiter::class);
+    }
+
+    /**
+     * Get the user of the analytics record.
+     */
+    public function authenticatable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * Get time user in the website to the analytics data.
+     *
+     * @return Attribute
+     *
+     */
+    protected function time(): Attribute
+    {
+        return Attribute::get(fn () => $this->end_at ? $this->end_at->diff($this->start_at)->format('%H:%I:%S') : null);
+    }
+}

@@ -16,7 +16,11 @@ class LaravelAnalyticsServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-analytics')
             ->hasConfigFile()
-            ->hasMigration('create_laravel-analytics_table')
+            ->hasMigrations([
+                'create_laravel-ips_table',
+                'create_laravel-session_visiters_table',
+                'create_laravel-visiters_table',
+            ])
             ->hasCommands([
                 GetAllDevicesCommand::class,
                 GetGeoIpCommand::class,
@@ -26,6 +30,10 @@ class LaravelAnalyticsServiceProvider extends PackageServiceProvider
 
     public function packageRegistered()
     {
+        $this->app->bind('laravel-analytics', function () {
+            return new LaravelAnalytics();
+        });
+
         $this->app->extend(GeoIpManager::class, function (GeoIpManager $manager, $app) {
             foreach ($app['config']->get('analytics.geo_ip.drivers', []) as $driver => $params) {
                 $manager->registerStore($driver, $params);

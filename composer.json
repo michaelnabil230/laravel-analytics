@@ -30,8 +30,7 @@
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpstan/phpstan-phpunit": "^1.0",
-        "phpunit/phpunit": "^9.5",
-        "spatie/laravel-ray": "^1.26"
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "psr-4": {
@@ -59,7 +58,10 @@
         "laravel": {
             "providers": [
                 "MichaelNabil230\\LaravelAnalytics\\LaravelAnalyticsServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Analytics": "MichaelNabil230\\LaravelAnalytics\\Facade\\LaravelAnalytics"
+            }
         }
     },
     "minimum-stability": "dev",

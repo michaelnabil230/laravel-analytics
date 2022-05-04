@@ -1,10 +1,10 @@
 <?php
 
-use MichaelNabil230\LaravelAnalytics\Models\Analytics;
+use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 
 return [
 
-    'model' => Analytics::class,
+    'model' => Visiter::class,
 
     /*
      * Which route paths are not trackable?
@@ -22,11 +22,11 @@ return [
      *     '192.168.0.1-192.168.0.100'
      *
      * And use net masks
-     *     '10.0.0.0/32'
+     *      127.0.0.0/24 -> range  127.0.0.1 - 127.0.0.255
      *     '172.17.0.0/255.255.0.0'
      */
     'do_not_track_ips' => [
-        '127.0.0.0/24', /// range 127.0.0.1 - 127.0.0.255
+        '127.0.0.2',
     ],
 
     /*

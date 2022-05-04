@@ -43,13 +43,13 @@ abstract class Driver
 
     abstract protected function getEndpoint(string $ip): string;
 
-    abstract public function latitude(): string;
+    abstract protected function latitude(): string;
 
-    abstract public function longitude(): string;
+    abstract protected function longitude(): string;
 
-    abstract public function country(): string;
+    abstract protected function country(): string;
 
-    abstract public function countryCode(): string;
+    abstract protected function countryCode(): string;
 
-    abstract public function city(): string;
+    abstract protected function city(): string;
 }

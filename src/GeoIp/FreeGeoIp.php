@@ -9,27 +9,27 @@ class FreeGeoIp extends Driver
         return "https://freegeoip.live/json/{$ip}";
     }
 
-    public function latitude(): string
+    protected function latitude(): string
     {
         return $this->data->latitude;
     }
 
-    public function longitude(): string
+    protected function longitude(): string
     {
         return $this->data->longitude;
     }
 
-    public function country(): string
+    protected function country(): string
     {
         return $this->data->country_name;
     }
 
-    public function countryCode(): string
+    protected function countryCode(): string
     {
         return $this->data->country_code;
     }
 
-    public function city(): string
+    protected function city(): string
     {
         return $this->data->city;
     }

@@ -9,7 +9,7 @@ class GeoIpManager extends Manager
 {
     public function getDefaultDriver(): string
     {
-        return $this->config->get('analytics.geo_ip.default', 'free_geo_ip');
+        return config('analytics.geo_ip.default', 'free_geo_ip');
     }
 
     public function registerStore(string $driver, array $params)

@@ -3,111 +3,82 @@
 namespace MichaelNabil230\LaravelAnalytics;
 
 use DeviceDetector\DeviceDetector;
-use Illuminate\Cache\CacheManager;
+use Illuminate\Support\Collection;
 use DeviceDetector\Parser\OperatingSystem;
-use Symfony\Component\HttpFoundation\IpUtils;
 use Illuminate\Contracts\Auth\Authenticatable;
-use MichaelNabil230\LaravelAnalytics\Jobs\GetGeoipData;
+use Illuminate\Database\Eloquent\Model;
+use MichaelNabil230\LaravelAnalytics\Models\Ip;
+use MichaelNabil230\LaravelAnalytics\Models\Visiter;
+use MichaelNabil230\LaravelAnalytics\Helpers\CheckForIp;
+use MichaelNabil230\LaravelAnalytics\Helpers\CheckForPath;
+use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
 
 class LaravelAnalytics
 {
-    // Model
-    protected $model;
-
-    protected CacheManager|null $cache = null;
-
-    protected bool $enableCache;
-
-    protected int $cacheTtl;
-
-    protected string $driverCache;
+    public Model $model;
 
     public function __construct()
     {
-        $this->model = config('analytics.model', Analytics::class);
-
-        $this->setCacheInstance();
+        $model = config('analytics.model', Visiter::class);
+        $this->model = new $model();
     }
 
-    public function setCacheInstance(): void
+    public function queries(): LaravelAnalyticQueries
     {
-        $this->enableCache = config('analytics.cache.enable', true);
-        $this->driverCache = config('analytics.cache.driver', 'file');
-        $this->cacheTtl = config('analytics.cache.ttl', 15);
-
-        if ($this->enableCache) {
-            $this->cache = $this->app['cache']->store($this->driverCache);
-        }
+        return LaravelAnalyticQueries::instance($this->model);
     }
 
-    protected function recordVisit($agent = null, string $event = '')
+    public function recordVisit($agent = null, string $event = ''): ?Visiter
     {
-        if ($this->isMatchingPath()) {
-            return;
+        if (CheckForPath::make(request()->getHost())->getResult()) {
+            return null;
         }
 
-        if (!$this->isValidIp()) {
-            return;
+        if (CheckForIp::make(request()->ip())->getResult()) {
+            return null;
         }
 
-        $ip = request()->ip();
+        $ip = Ip::firstOrCreate(['ip_address' => request()->ip()]);
 
         $data = $this->getVisitData($agent ?: request()->userAgent());
-        $data['event'] = $event ?: request()->header('X-Event', 'web-routes');
 
-        if ($this->enableCache && !$this->cache?->has("get-data-by-{$ip}")) {
-            $data += $this->cache?->get("get-data-by-{$ip}", []);
-        }
+        $sessionVisiter = $this->firstOrCreateSessionVisiter($ip->id, (bool)$data->get('is.bot', false));
 
-        $analytics = $this->model::create($data);
+        $data = $data->merge([
+            'event' => $event ?: request()->header('X-Event', 'web-routes'),
+            'session_visiter_id' => $sessionVisiter->id,
+        ])->toArray();
 
-        if ($this->enableCache && !$this->cache?->has("get-data-by-{$ip}")) {
-            GetGeoipData::dispatch($analytics);
-        }
-
-        return $analytics;
+        return $this->model::create($data);
     }
 
-    private function isMatchingPath(): bool
+    private function firstOrCreateSessionVisiter(string $ipId, bool $isBot): SessionVisiter
     {
-        // Get the paths from the config or the middleware
-        $paths = $this->getPathsByHost(request()->getHost());
+        $user = $this->getUser();
+        return SessionVisiter::firstOrCreate([
+            'ip_id' => $ipId,
+            'end_at' => null,
+        ], [
+            'authenticatable_type' => $user ? get_class($user) : null,
+            'authenticatable_id' => $user ?: $user?->id,
+            'end_at' => $isBot ? now() : null,
+        ]);
+    }
 
-        foreach ($paths as $path) {
-            if ($path !== '/') {
-                $path = trim($path, '/');
+    private function getUser(): Authenticatable|null
+    {
+        $guards = config('analytics.authentication.guards', []);
+
+        foreach ($guards as $guard) {
+            $user = auth()->guard($guard);
+            if ($user->check()) {
+                return $user->user();
             }
-
-            if (request()->fullUrlIs($path) || request()->is($path)) {
-                return true;
-            }
         }
-
-        return false;
+        return null;
     }
 
-    private function getPathsByHost(string $host): array
-    {
-        $paths = config('analytics.ignore_paths', []);
-
-        if (isset($paths[$host])) {
-            return $paths[$host];
-        }
-
-        return array_filter($paths, function ($path) {
-            return is_string($path);
-        });
-    }
-
-    private function isValidIp(): bool
-    {
-        $ip = request()->ip();
-        $ips = config('analytics.do_not_track_ips', []);
-
-        return in_array($ip, $ips) && IpUtils::checkIp($ip, $ips);
-    }
-
-    protected function getVisitData(string $agent): array
+    private function getVisitData(string $agent): Collection
     {
         $deviceDetector = new DeviceDetector($agent);
         $deviceDetector->parse();
@@ -138,8 +109,8 @@ class LaravelAnalytics
         $osFamily = $osFamily == 'gnu/linux' ? 'linux' : $osFamily;
 
         // "UNK UNK" browser and OS
-        $browserFamily = ($browser == 'UNK UNK') ? 'unk' : $browserFamily;
-        $osFamily = ($os == 'UNK UNK') ? 'unk' : $osFamily;
+        $browserFamily = ($browser == 'UNK UNK') ? 'Unknown' : $browserFamily;
+        $osFamily = ($os == 'UNK UNK') ? 'Unknown' : $osFamily;
 
         // Whether it's a bot
         $bot = null;
@@ -153,19 +124,18 @@ class LaravelAnalytics
             }
         }
 
-        $user = $this->getUser();
-
-        return [
-            'user_id' => $user ?: $user?->id,
-            'ip' => request()->ip(),
+        return collect([
             'method' => request()->method(),
             'url' => request()->fullUrl(),
             'referer' => request()->headers->get('referer'),
-            'is_ajax' => request()->ajax(),
             'user_agent' => $agent,
-            'is_mobile' => $deviceDetector->isMobile(),
-            'is_desktop' => $deviceDetector->isDesktop(),
-            'is_bot' => $isBot,
+            'is' => [
+                'ajax' => request()->ajax(),
+                'bot' => $isBot,
+                'desktop' => $deviceDetector->isDesktop(),
+                'mobile' => $deviceDetector->isMobile(),
+                'touch' => $deviceDetector->isTouchEnabled(),
+            ],
             'bot' => $bot ? $bot['name'] : null,
             'os' => $os,
             'os_family' => $osFamily,
@@ -173,31 +143,6 @@ class LaravelAnalytics
             'browser' => $browser,
             'browser_language_family' => $langFamily,
             'browser_language' => $lang,
-        ];
-    }
-
-    private function getUser(): Authenticatable|null
-    {
-        $guards = config('analytics.authentication.guards');
-
-        $guards = empty($guards) ? [null] : $guards;
-
-        foreach ($guards as $guard) {
-            $user = auth()->guard($guard);
-            if ($user->check()) {
-                return $user->user();
-            }
-        }
-        return null;
-    }
-
-    public function __call(string $method, array $parameters): mixed
-    {
-        return $this->$method(...$parameters);
-    }
-
-    public static function __callStatic(string $method, array $parameters): mixed
-    {
-        return (new static)->$method(...$parameters);
+        ]);
     }
 }

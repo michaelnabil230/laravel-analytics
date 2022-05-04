@@ -6,9 +6,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use MichaelNabil230\LaravelAnalytics\Events;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Analytics extends Model
+class Visiter extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -17,44 +17,19 @@ class Analytics extends Model
      */
     protected $fillable = [
         'event',
-        'user_id',
-        'ip',
+        'session_visiter_id',
         'method',
-        'is_ajax',
         'url',
         'referer',
         'user_agent',
-        'is_desktop',
-        'is_mobile',
-        'is_bot',
+        'is',
         'bot',
         'os_family',
         'os',
         'browser_family',
         'browser',
-        'country',
         'browser_language_family',
         'browser_language',
-        'country_code',
-        'city',
-        'latitude',
-        'longitude',
-    ];
-
-    /**
-     * The event map for the model.
-     *
-     * Allows for object-based events for native Eloquent events.
-     *
-     * @var array
-     */
-    protected $dispatchesEvents = [
-        'saving' => Events\SavingAnalytics::class,
-        'saved' => Events\AnalyticsSaved::class,
-        'creating' => Events\CreatingAnalytics::class,
-        'created' => Events\AnalyticsCreated::class,
-        'updating' => Events\UpdatingAnalytics::class,
-        'updated' => Events\AnalyticsUpdated::class,
     ];
 
     /**
@@ -63,10 +38,18 @@ class Analytics extends Model
      * @var array<string,int>
      */
     protected $casts = [
-        'is_ajax' => 'boolean',
-        'is_bot' => 'boolean',
-        'is_mobile' => 'boolean',
+        'is' => 'array',
     ];
+
+    /**
+     * Get the sessionVisiter that owns the Visiter
+     *
+     * @return BelongsTo
+     */
+    public function sessionVisiter(): BelongsTo
+    {
+        return $this->belongsTo(SessionVisiter::class);
+    }
 
     /**
      * Scope a query to exclude rows where certain boolean fields are equal to true.
@@ -79,10 +62,10 @@ class Analytics extends Model
     {
         $query
             ->when(in_array('bots', $fields), function ($query) {
-                $query->where('is_bot', false);
+                $query->where('is->bot', false);
             })
             ->when(in_array('ajax', $fields), function ($query) {
-                $query->where('is_ajax', false);
+                $query->where('is->ajax', false);
             });
     }
 
@@ -94,7 +77,7 @@ class Analytics extends Model
      */
     public function scopeBots($query)
     {
-        $query->where('is_bot', true);
+        $query->where('is->bot', true);
     }
 
     /**
@@ -105,7 +88,7 @@ class Analytics extends Model
      */
     public function scopeAjax($query)
     {
-        $query->where('is_ajax', true);
+        $query->where('is->ajax', true);
     }
 
     /**
@@ -133,7 +116,7 @@ class Analytics extends Model
     }
 
     /**
-     * Get the top values for a given field  
+     * Get the top values for a given field
      *
      * @param Carbon  $from
      * @param Carbon  $to
@@ -147,10 +130,25 @@ class Analytics extends Model
         return self::query()
             ->period($from, $to)
             ->except(['ajax', 'bots'])
-            ->addSelect(DB::raw("count('$top') as {$top}_count"))
+            ->addSelect(array_merge($columns, [DB::raw("COUNT($top) as '{$top}_count'")]))
             ->latest($top . '_count')
             ->groupBy($top)
             ->limit($limit)
-            ->get($columns);
+            ->get();
+    }
+
+    /**
+     * Get all of the ip for the project.
+     */
+    public function ip()
+    {
+        return $this->hasOneThrough(
+            Ip::class,
+            SessionVisiter::class,
+            'id',
+            'id',
+            'session_visiter_id',
+            'ip_id',
+        );
     }
 }
