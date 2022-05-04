@@ -4,14 +4,15 @@ namespace MichaelNabil230\LaravelAnalytics;
 
 use DeviceDetector\DeviceDetector;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
 use DeviceDetector\Parser\OperatingSystem;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 use MichaelNabil230\LaravelAnalytics\Models\Ip;
 use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 use MichaelNabil230\LaravelAnalytics\Helpers\CheckForIp;
 use MichaelNabil230\LaravelAnalytics\Helpers\CheckForPath;
 use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
+use MichaelNabil230\LaravelAnalytics\Services\Authentication;
 
 class LaravelAnalytics
 {
@@ -54,7 +55,7 @@ class LaravelAnalytics
 
     private function firstOrCreateSessionVisiter(string $ipId, bool $isBot): SessionVisiter
     {
-        $user = $this->getUser();
+        $user = Authentication::getUser();
         return SessionVisiter::firstOrCreate([
             'ip_id' => $ipId,
             'end_at' => null,
@@ -63,19 +64,6 @@ class LaravelAnalytics
             'authenticatable_id' => $user ?: $user?->id,
             'end_at' => $isBot ? now() : null,
         ]);
-    }
-
-    private function getUser(): Authenticatable|null
-    {
-        $guards = config('analytics.authentication.guards', []);
-
-        foreach ($guards as $guard) {
-            $user = auth()->guard($guard);
-            if ($user->check()) {
-                return $user->user();
-            }
-        }
-        return null;
     }
 
     private function getVisitData(string $agent): Collection

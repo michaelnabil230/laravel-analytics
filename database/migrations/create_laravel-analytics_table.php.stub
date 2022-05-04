@@ -4,8 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      *
@@ -13,6 +12,25 @@ return new class extends Migration
      */
     public function up()
     {
+        Schema::create('ips', function (Blueprint $table) {
+            $table->id();
+            $table->ipAddress()->unique();
+            $table->string('country')->default('');
+            $table->string('country_code')->default('');
+            $table->string('city')->default('');
+            $table->double('latitude')->nullable();
+            $table->double('longitude')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('session_visiters', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('ip_id')->constrained()->cascadeOnDelete();
+            $table->nullableMorphs('authenticatable');
+            $table->timestamp('start_at')->useCurrent();
+            $table->timestamp('end_at')->nullable();
+        });
+
         Schema::create('visiters', function (Blueprint $table) {
             $table->id();
             $table->foreignId('session_visiter_id')->constrained()->cascadeOnDelete();
@@ -40,6 +58,8 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('ips');
+        Schema::dropIfExists('session_visiters');
         Schema::dropIfExists('visiters');
     }
 };

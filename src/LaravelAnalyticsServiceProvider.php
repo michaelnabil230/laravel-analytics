@@ -16,11 +16,7 @@ class LaravelAnalyticsServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-analytics')
             ->hasConfigFile()
-            ->hasMigrations([
-                'create_laravel-ips_table',
-                'create_laravel-session_visiters_table',
-                'create_laravel-visiters_table',
-            ])
+            ->hasMigrations('create_laravel-analytics_table')
             ->hasCommands([
                 GetAllDevicesCommand::class,
                 GetGeoIpCommand::class,

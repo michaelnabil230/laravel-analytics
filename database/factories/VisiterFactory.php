@@ -3,12 +3,12 @@
 namespace VendorName\Skeleton\Database\Factories;
 
 use Illuminate\Support\Carbon;
-use MichaelNabil230\LaravelAnalytics\Models\Analytics;
+use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class AnalyticsFactory extends Factory
+class VisiterFactory extends Factory
 {
-    protected $model = Analytics::class;
+    protected $model = Visiter::class;
 
     public function definition()
     {
@@ -21,7 +21,7 @@ class AnalyticsFactory extends Factory
         ];
 
         return [
-            'ip' => $this->faker->ipv4,
+            'session_visiter_id' => $this->session_visiter_id,
             'event' => ['page-name', 'page-view-product', 'page-view-category', 'page-view-cart', 'page-view-checkout', 'make-order'][mt_rand(0, 5)],
             'method' => $this->faker->randomElement(['GET', 'POST', 'PUT', 'DELETE']),
             'url' => $this->faker->url,
@@ -41,11 +41,6 @@ class AnalyticsFactory extends Factory
             'browser' => ['Chrome 67.0', 'Firefox 58.0'][mt_rand(0, 1)],
             'browser_language_family' => ['ru', 'en', 'tl'][mt_rand(0, 2)],
             'browser_language' => $this->faker->languageCode,
-            'country' => $this->faker->country,
-            'country_code' => $this->faker->countryCode,
-            'city' => $this->faker->city,
-            'latitude' => $this->faker->latitude,
-            'longitude' => $this->faker->longitude,
             'created_at' => Carbon::now()->subDays($this->faker->numberBetween(0, 50))
         ];
     }

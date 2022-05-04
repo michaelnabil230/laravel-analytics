@@ -2,16 +2,20 @@
 
 namespace MichaelNabil230\LaravelAnalytics\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use MichaelNabil230\LaravelAnalytics\Models\Ip;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use MichaelNabil230\LaravelAnalytics\Traits\GeneralScopes;
+use MichaelNabil230\LaravelAnalytics\Events;
 
 class SessionVisiter extends Model
 {
+    use GeneralScopes;
+    
     /**
      * Indicates if the model should be timestamped.
      *
@@ -47,6 +51,22 @@ class SessionVisiter extends Model
      */
     protected $appends = [
         'time',
+    ];
+
+    /**
+     * The event map for the model.
+     *
+     * Allows for object-based events for native Eloquent events.
+     *
+     * @var array
+     */
+    protected $dispatchesEvents = [
+        'saving' => Events\SavingSessionVisiter::class,
+        'saved' => Events\SessionVisiterSaved::class,
+        'creating' => Events\CreatingSessionVisiter::class,
+        'created' => Events\SessionVisiterCreated::class,
+        'updating' => Events\UpdatingSessionVisiter::class,
+        'updated' => Events\SessionVisiterUpdated::class,
     ];
 
     /**

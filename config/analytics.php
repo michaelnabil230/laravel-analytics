@@ -81,8 +81,6 @@ return [
      * Laravel internal variables on user authentication and login.
      */
     'authentication' => [
-        'guards' => [
-            'web',
-        ],
+        'guards' => [], // defaults to ['web']
     ],
 ];
