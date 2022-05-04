@@ -28,20 +28,20 @@ class LaravelAnalyticQueries
         return new Ip();
     }
 
-    public function visiterTop(array $parameters)
+    public function visiterTop($parameters)
     {
-        return $this->visiter()->except(['ajax', 'bots'])->top(...$parameters);
+        return $this->visiter()->except(['ajax', 'bots'])->top($parameters);
     }
 
-    public function ipTop(array $parameters)
+    public function ipTop($parameters)
     {
-        return $this->ip()->top(...$parameters);
+        return $this->ip()->top($parameters);
     }
 
     public function __call($method, $parameters)
     {
         if (Str::startsWith($method, 'top')) {
-            $parameters[] = Str::camel(substr($method, 3));
+            $method = $parameters[] = Str::camel(substr($method, 3));
 
             if (in_array($method, ['event', 'browser', 'os', 'browserLanguage'])) {
                 return $this->visiterTop(...$parameters);
