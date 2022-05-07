@@ -4,15 +4,15 @@ namespace MichaelNabil230\LaravelAnalytics;
 
 use ArrayAccess;
 use BadMethodCallException;
-use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Traits\ForwardsCalls;
-use MichaelNabil230\LaravelAnalytics\Models\Ip;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use MichaelNabil230\LaravelAnalytics\Models\Visiter;
-use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Str;
+use Illuminate\Support\Traits\ForwardsCalls;
 use MichaelNabil230\LaravelAnalytics\Exceptions\InvalidSubject;
+use MichaelNabil230\LaravelAnalytics\Models\Ip;
+use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
+use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 
 class LaravelAnalyticQueries implements ArrayAccess
 {
@@ -77,7 +77,7 @@ class LaravelAnalyticQueries implements ArrayAccess
 
     public static function __callStatic($method, $parameters)
     {
-        if (!Str::startsWith($method, 'top')) {
+        if (! Str::startsWith($method, 'top')) {
             return $method(...$parameters);
         }
 
