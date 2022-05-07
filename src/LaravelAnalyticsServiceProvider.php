@@ -3,12 +3,11 @@
 namespace MichaelNabil230\LaravelAnalytics;
 
 use Illuminate\Http\Request;
-use Spatie\LaravelPackageTools\Package;
-use MichaelNabil230\LaravelAnalytics\GeoIpManager;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
+use MichaelNabil230\LaravelAnalytics\Commands\GetAllDevicesCommand;
 use MichaelNabil230\LaravelAnalytics\Commands\GetGeoIpCommand;
 use MichaelNabil230\LaravelAnalytics\Commands\GetPathsCommand;
-use MichaelNabil230\LaravelAnalytics\Commands\GetAllDevicesCommand;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class LaravelAnalyticsServiceProvider extends PackageServiceProvider
 {

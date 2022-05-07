@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use MichaelNabil230\LaravelAnalytics\Observers\IpObserver;
 use MichaelNabil230\LaravelAnalytics\Traits\GeneralScopes;
-use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
 
 class Ip extends Model
 {

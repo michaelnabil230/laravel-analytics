@@ -3,14 +3,14 @@
 namespace MichaelNabil230\LaravelAnalytics;
 
 use DeviceDetector\DeviceDetector;
-use Illuminate\Support\Collection;
 use DeviceDetector\Parser\OperatingSystem;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use MichaelNabil230\LaravelAnalytics\Models\Ip;
-use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 use MichaelNabil230\LaravelAnalytics\Helpers\CheckForIp;
 use MichaelNabil230\LaravelAnalytics\Helpers\CheckForPath;
+use MichaelNabil230\LaravelAnalytics\Models\Ip;
 use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
+use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 use MichaelNabil230\LaravelAnalytics\Services\Authentication;
 
 class LaravelAnalytics

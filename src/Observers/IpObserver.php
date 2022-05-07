@@ -3,8 +3,8 @@
 namespace MichaelNabil230\LaravelAnalytics\Observers;
 
 use Illuminate\Support\Facades\Cache;
-use MichaelNabil230\LaravelAnalytics\Models\Ip;
 use MichaelNabil230\LaravelAnalytics\Jobs\GetGeoipData;
+use MichaelNabil230\LaravelAnalytics\Models\Ip;
 
 class IpObserver
 {

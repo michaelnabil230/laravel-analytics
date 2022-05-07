@@ -4,14 +4,14 @@ namespace MichaelNabil230\LaravelAnalytics;
 
 use ArrayAccess;
 use BadMethodCallException;
-use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Traits\ForwardsCalls;
-use MichaelNabil230\LaravelAnalytics\Models\Ip;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Str;
+use Illuminate\Support\Traits\ForwardsCalls;
 use MichaelNabil230\LaravelAnalytics\Exceptions\InvalidSubject;
+use MichaelNabil230\LaravelAnalytics\Models\Ip;
+use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 
 class LaravelAnalyticQueries implements ArrayAccess
 {

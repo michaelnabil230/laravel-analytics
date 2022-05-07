@@ -2,12 +2,10 @@
 
 namespace MichaelNabil230\LaravelAnalytics\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use MichaelNabil230\LaravelAnalytics\Models\Ip;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use MichaelNabil230\LaravelAnalytics\Traits\GeneralScopes;
-use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
 
 class Visiter extends Model
 {

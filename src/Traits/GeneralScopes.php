@@ -2,9 +2,9 @@
 
 namespace MichaelNabil230\LaravelAnalytics\Traits;
 
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Query\Builder;
 
 trait GeneralScopes
 {
