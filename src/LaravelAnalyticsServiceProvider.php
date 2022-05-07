@@ -3,8 +3,8 @@
 namespace MichaelNabil230\LaravelAnalytics;
 
 use Illuminate\Http\Request;
-use MichaelNabil230\LaravelAnalytics\Commands\GetTopCountDevicesCommand;
 use MichaelNabil230\LaravelAnalytics\Commands\GetIpCommand;
+use MichaelNabil230\LaravelAnalytics\Commands\GetTopCountDevicesCommand;
 use MichaelNabil230\LaravelAnalytics\Commands\GetTopCountPathsCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
