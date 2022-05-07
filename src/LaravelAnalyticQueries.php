@@ -42,21 +42,21 @@ class LaravelAnalyticQueries implements ArrayAccess
         return new static($subject);
     }
 
-    private static function visiter(): self
+    public static function visiter(): self
     {
         $model = config('analytics.visiter_model', Visiter::class);
 
         return self::for(new $model());
     }
 
-    private static function ip(): self
+    public static function ip(): self
     {
         $model = config('analytics.ip_model', Ip::class);
 
         return self::for(new $model());
     }
 
-    private static function sessionVisiter(): self
+    public static function sessionVisiter(): self
     {
         $model = config('analytics.session_visiter_model', SessionVisiter::class);
 

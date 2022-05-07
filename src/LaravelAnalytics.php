@@ -25,22 +25,20 @@ class LaravelAnalytics
             return null;
         }
 
-        $ipModel = config('analytics.ip_model', Ip::class);
-        $ip = $ipModel::firstOrCreate(['ip_address' => request()->ip()]);
+        $ip = LaravelAnalyticQueries::ip()->firstOrCreate(['ip_address' => request()->ip()]);
 
-        $data = $this->getVisiterData($agent ?: request()->userAgent());
+        $visiterData = $this->getVisiterData($agent ?: request()->userAgent());
 
-        $sessionVisiter = $this->firstOrCreateSessionVisiter($ip->id, (bool)$data->get('is.bot', false));
+        $sessionVisiter = $this->firstOrCreateSessionVisiter($ip->id, (bool)$visiterData->get('is.bot', false));
 
-        $data = $data->merge([
+        $visiterData = $visiterData->merge([
             'type_request' => $typeRequest,
             'event' => request()->header('X-Event', ''),
             'event_description' => request()->header('X-Event-Description', ''),
             'session_visiter_id' => $sessionVisiter->id,
         ])->toArray();
 
-        $visiterModel = config('analytics.visiter_model', Visiter::class);
-        $visiter = $visiterModel::create($data);
+        $visiter = LaravelAnalyticQueries::visiter()->create($visiterData);
 
         return $this->formatData($ip, $sessionVisiter, $visiter);
     }
@@ -56,18 +54,23 @@ class LaravelAnalytics
 
     private function firstOrCreateSessionVisiter(string $ipId, bool $isBot): SessionVisiter
     {
-        $user = Authentication::getUser();
-
-        $sessionVisiterModel = config('analytics.session_visiter_model', SessionVisiter::class);
-
-        return $sessionVisiterModel::firstOrCreate([
+        $attributes = [
             'ip_id' => $ipId,
             'end_at' => null,
-        ], [
-            'authenticatable_type' => $user ? get_class($user) : null,
-            'authenticatable_id' => $user ? $user->id : null,
+        ];
+
+        $values = [
             'end_at' => $isBot ? now() : null,
-        ]);
+        ];
+
+        if ($user = Authentication::getUser()) {
+            $values += [
+                'authenticatable_type' => get_class($user),
+                'authenticatable_id' => $user->id,
+            ];
+        }
+
+        return LaravelAnalyticQueries::sessionVisiter()->firstOrCreate($attributes, $values);
     }
 
     private function getVisiterData(string $agent): Collection
