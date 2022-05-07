@@ -3,9 +3,9 @@
 namespace MichaelNabil230\LaravelAnalytics;
 
 use Illuminate\Http\Request;
-use MichaelNabil230\LaravelAnalytics\Commands\GetAllDevicesCommand;
-use MichaelNabil230\LaravelAnalytics\Commands\GetGeoIpCommand;
-use MichaelNabil230\LaravelAnalytics\Commands\GetPathsCommand;
+use MichaelNabil230\LaravelAnalytics\Commands\GetTopCountDevicesCommand;
+use MichaelNabil230\LaravelAnalytics\Commands\GetIpCommand;
+use MichaelNabil230\LaravelAnalytics\Commands\GetTopCountPathsCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -18,9 +18,9 @@ class LaravelAnalyticsServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasMigrations('create_laravel-analytics_table')
             ->hasCommands([
-                GetAllDevicesCommand::class,
-                GetGeoIpCommand::class,
-                GetPathsCommand::class,
+                GetTopCountDevicesCommand::class,
+                GetIpCommand::class,
+                GetTopCountPathsCommand::class,
             ]);
     }
 
@@ -46,7 +46,7 @@ class LaravelAnalyticsServiceProvider extends PackageServiceProvider
     public function bootingPackage()
     {
         Request::macro('visiter', function ($key = null) {
-            return $this->visiter?->when($key, function ($collection, $key) {
+            return collect($this->visiter)->when($key, function ($collection, $key) {
                 return $collection->get($key);
             });
         });

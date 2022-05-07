@@ -4,15 +4,15 @@ namespace MichaelNabil230\LaravelAnalytics;
 
 use ArrayAccess;
 use BadMethodCallException;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Traits\ForwardsCalls;
-use MichaelNabil230\LaravelAnalytics\Exceptions\InvalidSubject;
 use MichaelNabil230\LaravelAnalytics\Models\Ip;
-use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use MichaelNabil230\LaravelAnalytics\Models\Visiter;
+use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
+use MichaelNabil230\LaravelAnalytics\Exceptions\InvalidSubject;
 
 class LaravelAnalyticQueries implements ArrayAccess
 {
@@ -25,54 +25,53 @@ class LaravelAnalyticQueries implements ArrayAccess
      */
     public function __construct($subject)
     {
-        $this->initializeSubject($subject);
+        $this->subject = $subject;
     }
 
     /**
-     * @param EloquentBuilder|Relation|string $subject
-     *
-     * @return static
+     * @param Builder|Relation|string $subject
      */
-    private static function for($subject): self
+    private static function for($subject): Builder
     {
         if (is_subclass_of($subject, Model::class)) {
             $subject = $subject::query();
         }
 
-        return new static($subject);
+        return (new self($subject))->getEloquentBuilder();
     }
 
-    public static function visiter(): self
+    public static function visiter(): Builder
     {
         $model = config('analytics.visiter_model', Visiter::class);
 
         return self::for(new $model());
     }
 
-    public static function ip(): self
+    public static function ip(): Builder
     {
         $model = config('analytics.ip_model', Ip::class);
 
         return self::for(new $model());
     }
-
-    public static function sessionVisiter(): self
+ 
+    public static function sessionVisiter(): Builder
     {
         $model = config('analytics.session_visiter_model', SessionVisiter::class);
 
         return self::for(new $model());
     }
 
-    protected function initializeSubject(Builder|Relation $subject): self
+    private function getEloquentBuilder(): Builder
     {
-        throw_unless(
-            $subject instanceof Builder || $subject instanceof Relation,
-            InvalidSubject::make($subject)
-        );
+        if ($this->subject instanceof Builder) {
+            return $this->subject;
+        }
 
-        $this->subject = $subject;
+        if ($this->subject instanceof Relation) {
+            return $this->subject->getQuery();
+        }
 
-        return $this;
+        throw InvalidSubject::make($this->subject);
     }
 
     public static function __callStatic($method, $parameters)

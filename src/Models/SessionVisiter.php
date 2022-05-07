@@ -37,7 +37,7 @@ class SessionVisiter extends Model
     /**
      * The attributes that should be cast.
      *
-     * @var array<string,int>
+     * @var array<string,string>
      */
     protected $casts = [
         'start_at' => 'datetime',
@@ -105,6 +105,6 @@ class SessionVisiter extends Model
      */
     protected function time(): Attribute
     {
-        return Attribute::get(fn () => $this->end_at ? $this->end_at->diff($this->start_at)->format('%H:%I:%S') : null);
+        return Attribute::get(fn ($value, $attributes) => $attributes['end_at'] ? $attributes['end_at']->diff($attributes['start_at'])->format('%H:%I:%S') : null);
     }
 }

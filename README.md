@@ -172,9 +172,8 @@ use MichaelNabil230\LaravelAnalytics\LaravelAnalyticQueries;
 
 $topEvents = LaravelAnalyticQueries::topVisiterEvent()
         // ->where('event', 'test event')
-        // ->except(['bots', 'ajax'])
-        // ->isBot()
-        // ->isAjax()
+        // ->is('bots')
+        // ->is('ajax', false)
         // ->uniqueSession()
         // ->uniqueIp()
         // ->with(['data'])

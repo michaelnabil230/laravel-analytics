@@ -8,7 +8,7 @@ class InvalidSubject extends InvalidArgumentException
 {
     public static function make($subject)
     {
-        return new static(
+        return new self(
             sprintf(
                 'Subject %s is invalid.',
                 is_object($subject)

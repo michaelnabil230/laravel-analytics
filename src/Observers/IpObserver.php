@@ -31,6 +31,6 @@ class IpObserver
      */
     public function deleted(Ip $ip)
     {
-        Cache::forget('data-ip-' . $ip->ip_address);
+        // Cache::forget('data-ip-' . $ip->ip_address);
     }
 }

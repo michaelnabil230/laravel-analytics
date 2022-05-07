@@ -38,7 +38,7 @@ class Visiter extends Model
     /**
      * The attributes that should be cast.
      *
-     * @var array<string,int>
+     * @var array<string,string>
      */
     protected $casts = [
         'is' => 'array',
@@ -70,45 +70,16 @@ class Visiter extends Model
     }
 
     /**
-     * Scope a query to exclude rows where certain boolean fields are equal to true.
+     * Return is column
      *
      * @param Builder $query
-     * @param array $fields
+     * @param string $column
+     * @param bool $value
      * @return void
      */
-    public function scopeExcept($query, $fields)
+    public function scopeIs($query, $column, $value = true)
     {
-        $query
-            ->when(in_array('bots', $fields), function ($query) {
-                $query->isBot(false);
-            })
-            ->when(in_array('ajax', $fields), function ($query) {
-                $query->isAjax(false);
-            });
-    }
-
-    /**
-     * Return only visits from bots/crawlers
-     *
-     * @param Builder $query
-     * @param bool $isBot
-     * @return void
-     */
-    public function scopeIsBot($query, $isBot = true)
-    {
-        $query->where('is->bot', $isBot);
-    }
-
-    /**
-     * Return only ajax requests
-     *
-     * @param  Builder  $query
-     * @param  bool  $isAjax
-     * @return void
-     */
-    public function scopeIsAjax($query, $isAjax = true)
-    {
-        $query->where('is->ajax', $isAjax);
+        $query->where('is->' . $column, $value);
     }
 
     /**

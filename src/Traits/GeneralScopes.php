@@ -14,11 +14,11 @@ trait GeneralScopes
      * @param Builder $query
      * @param Carbon $from
      * @param Carbon $to
-     * @return void
+     * @return Builder
      */
     public function scopePeriod($query, $from, $to)
     {
-        $query->whereBetween('created_at', [$from->format('Y-m-d H:i:s'), $to->format('Y-m-d 23:59:59')]);
+        return $query->whereBetween('created_at', [$from->format('Y-m-d H:i:s'), $to->format('Y-m-d 23:59:59')]);
     }
 
     /**
@@ -27,7 +27,7 @@ trait GeneralScopes
      * @param Builder $query
      * @param string $top
      * @param array|mixed $columns
-     * @return \Illuminate\Database\Eloquent\Collection<int, static>
+     * @return Builder
      */
     public function scopeTop($query, $top, $columns = ['*'])
     {

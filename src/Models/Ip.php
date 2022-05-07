@@ -29,7 +29,7 @@ class Ip extends Model
     /**
      * The attributes that should be cast.
      *
-     * @var array<string,int>
+     * @var array<string,string>
      */
     protected $casts = [
         'additional_data' => 'array',

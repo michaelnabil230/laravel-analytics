@@ -4,6 +4,7 @@ namespace MichaelNabil230\LaravelAnalytics;
 
 use DeviceDetector\DeviceDetector;
 use DeviceDetector\Parser\OperatingSystem;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use MichaelNabil230\LaravelAnalytics\Helpers\CheckForIp;
@@ -29,7 +30,7 @@ class LaravelAnalytics
 
         $visiterData = $this->getVisiterData($agent ?: request()->userAgent());
 
-        $sessionVisiter = $this->firstOrCreateSessionVisiter($ip->id, (bool)$visiterData->get('is.bot', false));
+        $sessionVisiter = $this->firstOrCreateSessionVisiter($ip->id, (bool)Arr::get($visiterData, 'is.bot', false));
 
         $visiterData = $visiterData->merge([
             'type_request' => $typeRequest,
@@ -66,7 +67,7 @@ class LaravelAnalytics
         if ($user = Authentication::getUser()) {
             $values += [
                 'authenticatable_type' => get_class($user),
-                'authenticatable_id' => $user->id,
+                'authenticatable_id' => $user->getAuthIdentifier(),
             ];
         }
 

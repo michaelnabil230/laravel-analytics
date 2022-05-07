@@ -17,14 +17,8 @@ class GetGeoipData implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    /**
-     * Create a new job instance.
-     *
-     * @return void
-     */
     public function __construct(protected Ip $ip)
     {
-        //
     }
 
     public function handle()
