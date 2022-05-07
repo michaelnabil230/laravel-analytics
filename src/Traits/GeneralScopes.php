@@ -32,7 +32,7 @@ trait GeneralScopes
     public function scopeTop($query, $top, $columns = ['*'])
     {
         return $query
-            ->addSelect(array_merge($columns, [DB::raw("COUNT($top) as '{$top}_count'")]))
+            ->select(array_merge($columns, [DB::raw("COUNT($top) as '{$top}_count'")]))
             ->latest($top . '_count')
             ->groupBy($top);
     }

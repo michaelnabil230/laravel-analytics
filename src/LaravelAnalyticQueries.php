@@ -4,24 +4,24 @@ namespace MichaelNabil230\LaravelAnalytics;
 
 use ArrayAccess;
 use BadMethodCallException;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Traits\ForwardsCalls;
-use MichaelNabil230\LaravelAnalytics\Exceptions\InvalidSubject;
 use MichaelNabil230\LaravelAnalytics\Models\Ip;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use MichaelNabil230\LaravelAnalytics\Models\Visiter;
+use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
+use Illuminate\Database\Eloquent\Builder;
+use MichaelNabil230\LaravelAnalytics\Exceptions\InvalidSubject;
 
 class LaravelAnalyticQueries implements ArrayAccess
 {
     use ForwardsCalls;
 
-    /** @var \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Relations\Relation */
-    protected $subject;
+    protected Builder|Relation $subject;
 
     /**
-     * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Relations\Relation $subject
+     * @param Builder|Relation $subject
      */
     public function __construct($subject)
     {
@@ -42,45 +42,64 @@ class LaravelAnalyticQueries implements ArrayAccess
         return new static($subject);
     }
 
-    public static function visiter(): self
+    private static function visiter(): self
     {
-        $visiterModel = config('analytics.visiter_model', Visiter::class);
+        $model = config('analytics.visiter_model', Visiter::class);
 
-        return self::for(new $visiterModel());
+        return self::for(new $model());
     }
 
-    public static function ip(): self
+    private static function ip(): self
     {
-        $ipModel = config('analytics.ip_model', Ip::class);
+        $model = config('analytics.ip_model', Ip::class);
 
-        return self::for(new $ipModel());
+        return self::for(new $model());
     }
 
-    public function visiterTop($parameters)
+    private static function sessionVisiter(): self
     {
-        return $this->subject->except(['ajax', 'bots'])->top($parameters);
+        $model = config('analytics.session_visiter_model', SessionVisiter::class);
+
+        return self::for(new $model());
     }
 
-    public function ipTop($parameters)
+    protected function initializeSubject(Builder|Relation $subject): self
     {
-        return $this->subject->top($parameters);
+        throw_unless(
+            $subject instanceof Builder || $subject instanceof Relation,
+            InvalidSubject::make($subject)
+        );
+
+        $this->subject = $subject;
+
+        return $this;
+    }
+
+    public static function __callStatic($method, $parameters)
+    {
+        if (!Str::startsWith($method, 'top')) {
+            return $method(...$parameters);
+        }
+
+        $method = substr($method, 3);
+
+        if (Str::startsWith($method, 'Visiter')) {
+            $parentMethod = 'visiter';
+        } elseif (Str::startsWith($method, 'Ip')) {
+            $parentMethod = 'ip';
+        } elseif (Str::startsWith($method, 'SessionVisiter')) {
+            $parentMethod = 'sessionVisiter';
+        } else {
+            throw new BadMethodCallException("Method {$method} not found");
+        }
+
+        $parameters[] = Str::camel(substr($method, strlen($parentMethod)));
+
+        return self::$parentMethod()->top(...array_reverse($parameters));
     }
 
     public function __call($method, $parameters)
     {
-        if (Str::startsWith($method, 'top')) {
-            $method = Str::camel(substr($method, 3));
-            $parameters[] = $method;
-
-            if (in_array($method, ['event', 'browser', 'os', 'browserLanguage'])) {
-                return $this->visiterTop(...$parameters);
-            } elseif (in_array($method, ['ip_address', 'country', 'country_code', 'city'])) {
-                return $this->ipTop(...$parameters);
-            }
-
-            throw new BadMethodCallException("Method [$method] does not exist on any Model.");
-        }
-
         $result = $this->forwardCallTo($this->subject, $method, $parameters);
 
         /*
@@ -92,28 +111,6 @@ class LaravelAnalyticQueries implements ArrayAccess
         }
 
         return $result;
-    }
-
-    public function getSubject()
-    {
-        return $this->subject;
-    }
-
-    /**
-     * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Relations\Relation $subject
-     *
-     * @return $this
-     */
-    protected function initializeSubject($subject): self
-    {
-        throw_unless(
-            $subject instanceof EloquentBuilder || $subject instanceof Relation,
-            InvalidSubject::make($subject)
-        );
-
-        $this->subject = $subject;
-
-        return $this;
     }
 
     public function clone()

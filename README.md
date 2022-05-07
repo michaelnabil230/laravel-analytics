@@ -170,15 +170,18 @@ Route::middleware('analytics:api-request')->group(function () {
 use Illuminate\Support\Carbon;
 use MichaelNabil230\LaravelAnalytics\LaravelAnalyticQueries;
 
-$topEvents = LaravelAnalyticQueries::visiter()
-        ->topEvent()
+$topEvents = LaravelAnalyticQueries::topVisiterEvent()
         // ->where('event', 'test event')
         // ->except(['bots', 'ajax'])
         // ->isBot()
         // ->isAjax()
         // ->uniqueSession()
         // ->uniqueIp()
-        ->period(Carbon::now(), Carbon::now()->subDays(7))
+        // ->with(['data'])
+        // ->take(10)
+        // ->select('id') // Is very important: Don't use `select` here pass what u need in `topVisiterEvent`
+        // ->addSelect([DB::raw("COUNT(*) as 'count'")])
+        ->period(Carbon::now(), Carbon::now()->addDays(7))
         ->limit(10)
         ->get();
 ```
