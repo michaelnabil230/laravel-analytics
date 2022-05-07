@@ -34,7 +34,6 @@ trait GeneralScopes
             ->addSelect(array_merge($columns, [DB::raw("COUNT($top) as '{$top}_count'")]))
             ->latest($top . '_count')
             ->groupBy($top)
-            ->limit($limit)
-            ->get();
+            ->limit($limit);
     }
 }

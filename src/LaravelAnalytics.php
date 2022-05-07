@@ -4,9 +4,7 @@ namespace MichaelNabil230\LaravelAnalytics;
 
 use DeviceDetector\DeviceDetector;
 use Illuminate\Support\Collection;
-use Illuminate\Database\Eloquent\Model;
 use DeviceDetector\Parser\OperatingSystem;
-use Illuminate\Contracts\Auth\Authenticatable;
 use MichaelNabil230\LaravelAnalytics\Models\Ip;
 use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 use MichaelNabil230\LaravelAnalytics\Helpers\CheckForIp;
@@ -16,19 +14,6 @@ use MichaelNabil230\LaravelAnalytics\Services\Authentication;
 
 class LaravelAnalytics
 {
-    public Model $model;
-
-    public function __construct()
-    {
-        $model = config('analytics.model', Visiter::class);
-        $this->model = new $model();
-    }
-
-    public function queries(): LaravelAnalyticQueries
-    {
-        return LaravelAnalyticQueries::instance($this->model);
-    }
-
     public function recordVisit($agent = null, string $event = ''): ?Visiter
     {
         if (CheckForPath::make(request()->getHost())->getResult()) {
@@ -39,7 +24,8 @@ class LaravelAnalytics
             return null;
         }
 
-        $ip = Ip::firstOrCreate(['ip_address' => request()->ip()]);
+        $ipModel = config('analytics.ip_model', Ip::class);
+        $ip = $ipModel::firstOrCreate(['ip_address' => request()->ip()]);
 
         $data = $this->getVisitData($agent ?: request()->userAgent());
 
@@ -50,13 +36,17 @@ class LaravelAnalytics
             'session_visiter_id' => $sessionVisiter->id,
         ])->toArray();
 
-        return $this->model::create($data);
+        $visiterModel = config('analytics.visiter_model', Visiter::class);
+        return $visiterModel::create($data);
     }
 
     private function firstOrCreateSessionVisiter(string $ipId, bool $isBot): SessionVisiter
     {
         $user = Authentication::getUser();
-        return SessionVisiter::firstOrCreate([
+
+        $sessionVisiterModel = config('analytics.session_visiter_model', SessionVisiter::class);
+
+        return $sessionVisiterModel::firstOrCreate([
             'ip_id' => $ipId,
             'end_at' => null,
         ], [

@@ -1,10 +1,14 @@
 <?php
 
+use MichaelNabil230\LaravelAnalytics\Models\Ip;
+use MichaelNabil230\LaravelAnalytics\Models\SessionVisiter;
 use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 
 return [
 
-    'model' => Visiter::class,
+    'ip_model' => Ip::class,
+    'session_visiter_model' => SessionVisiter::class,
+    'visiter_model' => Visiter::class,
 
     /*
      * Which route paths are not trackable?
