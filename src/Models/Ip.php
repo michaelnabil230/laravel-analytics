@@ -24,6 +24,16 @@ class Ip extends Model
         'city',
         'latitude',
         'longitude',
+        'additional_data',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string,int>
+     */
+    protected $casts = [
+        'additional_data' => 'array',
     ];
 
     /**

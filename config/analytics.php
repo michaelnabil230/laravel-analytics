@@ -14,7 +14,7 @@ return [
      * Which route paths are not trackable?
      */
     'ignore_paths' => [
-        'api/*',
+        // 'api/*',
     ],
 
     /*

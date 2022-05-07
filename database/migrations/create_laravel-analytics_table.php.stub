@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->string('city')->default('');
             $table->double('latitude')->nullable();
             $table->double('longitude')->nullable();
+            $table->longText('additional_data')->nullable();
             $table->timestamps();
         });
 
@@ -34,7 +35,9 @@ return new class extends Migration {
         Schema::create('visiters', function (Blueprint $table) {
             $table->id();
             $table->foreignId('session_visiter_id')->constrained()->cascadeOnDelete();
+            $table->string('type_request');
             $table->string('event');
+            $table->longText('event_description');
             $table->string('method')->nullable();
             $table->text('url')->nullable();
             $table->text('referer')->nullable();

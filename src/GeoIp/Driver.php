@@ -15,7 +15,7 @@ abstract class Driver
     ) {
     }
 
-    public function getDataFor(string $ip)
+    public function getDataFor(string $ip): ?self
     {
         $url = $this->getEndpoint($ip);
         $headers = Arr::get($this->options, 'headers', []);
@@ -39,8 +39,8 @@ abstract class Driver
             'country' => $this->country() ?: '',
             'country_code' => $this->countryCode() ?: '',
             'city' => $this->city() ?: '',
-        ])
-            ->merge($this->additionalData());
+            'additional_data' => $this->additionalData(),
+        ]);
     }
 
     abstract protected function getEndpoint(string $ip): string;

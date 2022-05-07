@@ -2,6 +2,7 @@
 
 namespace MichaelNabil230\LaravelAnalytics;
 
+use Illuminate\Http\Request;
 use Spatie\LaravelPackageTools\Package;
 use MichaelNabil230\LaravelAnalytics\GeoIpManager;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -40,6 +41,15 @@ class LaravelAnalyticsServiceProvider extends PackageServiceProvider
 
         $this->app->bind('geo-ip', function ($app) {
             return $app->make(GeoIpManager::class)->driver();
+        });
+    }
+
+    public function bootingPackage()
+    {
+        Request::macro('visiter', function ($key = null) {
+            return $this->visiter?->when($key, function ($collection, $key) {
+                return $collection->get($key);
+            });
         });
     }
 }

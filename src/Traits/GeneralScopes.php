@@ -2,7 +2,9 @@
 
 namespace MichaelNabil230\LaravelAnalytics\Traits;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
 
 trait GeneralScopes
 {
@@ -16,7 +18,7 @@ trait GeneralScopes
      */
     public function scopePeriod($query, $from, $to)
     {
-        $query->whereBetween('created_at', [$from->format('Y-m-d'), $to->format('Y-m-d')]);
+        $query->whereBetween('created_at', [$from->format('Y-m-d H:i:s'), $to->format('Y-m-d 23:59:59')]);
     }
 
     /**
@@ -24,16 +26,14 @@ trait GeneralScopes
      *
      * @param Builder $query
      * @param string $top
-     * @param int $limit
      * @param array|mixed $columns
      * @return \Illuminate\Database\Eloquent\Collection<int, static>
      */
-    public function scopeTop($query, $top, $limit = 10, $columns = ['*'])
+    public function scopeTop($query, $top, $columns = ['*'])
     {
         return $query
             ->addSelect(array_merge($columns, [DB::raw("COUNT($top) as '{$top}_count'")]))
             ->latest($top . '_count')
-            ->groupBy($top)
-            ->limit($limit);
+            ->groupBy($top);
     }
 }

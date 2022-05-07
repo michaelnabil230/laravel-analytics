@@ -2,17 +2,18 @@
 
 namespace MichaelNabil230\LaravelAnalytics\Services;
 
-use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Auth;
 
 class Authentication
 {
     public static function getUser(): Authenticatable|null
     {
-        $guards = config('analytics.authentication.guards', [null]);
+        $guards = config('analytics.authentication.guards');
+        $guards = empty($guards) ? [null] : $guards;
 
-        $auth = app('auth');
         foreach ($guards as $guard) {
-            $auth = $auth->guard($guard);
+            $auth = Auth::guard($guard);
             if ($auth->check()) {
                 return $auth->user();
             }

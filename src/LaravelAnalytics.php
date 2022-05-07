@@ -5,6 +5,7 @@ namespace MichaelNabil230\LaravelAnalytics;
 use DeviceDetector\DeviceDetector;
 use Illuminate\Support\Collection;
 use DeviceDetector\Parser\OperatingSystem;
+use Illuminate\Support\Str;
 use MichaelNabil230\LaravelAnalytics\Models\Ip;
 use MichaelNabil230\LaravelAnalytics\Models\Visiter;
 use MichaelNabil230\LaravelAnalytics\Helpers\CheckForIp;
@@ -14,7 +15,7 @@ use MichaelNabil230\LaravelAnalytics\Services\Authentication;
 
 class LaravelAnalytics
 {
-    public function recordVisit($agent = null, string $event = ''): ?Visiter
+    public function recordVisiter(string $typeRequest, $agent = null): ?Collection
     {
         if (CheckForPath::make(request()->getHost())->getResult()) {
             return null;
@@ -27,17 +28,30 @@ class LaravelAnalytics
         $ipModel = config('analytics.ip_model', Ip::class);
         $ip = $ipModel::firstOrCreate(['ip_address' => request()->ip()]);
 
-        $data = $this->getVisitData($agent ?: request()->userAgent());
+        $data = $this->getVisiterData($agent ?: request()->userAgent());
 
         $sessionVisiter = $this->firstOrCreateSessionVisiter($ip->id, (bool)$data->get('is.bot', false));
 
         $data = $data->merge([
-            'event' => $event ?: request()->header('X-Event', 'web-routes'),
+            'type_request' => $typeRequest,
+            'event' => request()->header('X-Event', ''),
+            'event_description' => request()->header('X-Event-Description', ''),
             'session_visiter_id' => $sessionVisiter->id,
         ])->toArray();
 
         $visiterModel = config('analytics.visiter_model', Visiter::class);
-        return $visiterModel::create($data);
+        $visiter = $visiterModel::create($data);
+
+        return $this->formatData($ip, $sessionVisiter, $visiter);
+    }
+
+    private function formatData(Ip $ip, SessionVisiter $sessionVisiter, Visiter $visiter): Collection
+    {
+        $ip = collect($ip)->except(['id', 'created_at', 'updated_at']);
+        $sessionVisiter = collect($sessionVisiter)->except(['id', 'ip_id']);
+        $visiter = collect($visiter)->except(['id', 'session_visiter_id', 'created_at', 'updated_at']);
+
+        return $ip->merge($sessionVisiter)->merge($visiter);
     }
 
     private function firstOrCreateSessionVisiter(string $ipId, bool $isBot): SessionVisiter
@@ -51,12 +65,12 @@ class LaravelAnalytics
             'end_at' => null,
         ], [
             'authenticatable_type' => $user ? get_class($user) : null,
-            'authenticatable_id' => $user ?: $user?->id,
+            'authenticatable_id' => $user ? $user->id : null,
             'end_at' => $isBot ? now() : null,
         ]);
     }
 
-    private function getVisitData(string $agent): Collection
+    private function getVisiterData(string $agent): Collection
     {
         $deviceDetector = new DeviceDetector($agent);
         $deviceDetector->parse();
@@ -65,8 +79,8 @@ class LaravelAnalytics
         $browser = $deviceDetector->getClient('version')
             ? $deviceDetector->getClient('name') . ' ' . $deviceDetector->getClient('version')
             : $deviceDetector->getClient('name');
-
-        $browserFamily = str_replace(' ', '-', strtolower($deviceDetector->getClient('name')));
+        $browserFamily = Str::replaceFirst(' ', '-', Str::lower($deviceDetector->getClient('name')));
+        $browserFamily = ($browser == 'UNK UNK') ? 'UNK UNK' : $browserFamily;
 
         // Browser language
         preg_match_all('/([a-z]{2})-[A-Z]{2}/', request()->server('HTTP_ACCEPT_LANGUAGE'), $matches);
@@ -79,16 +93,9 @@ class LaravelAnalytics
             ? $deviceDetector->getOs('name') . ' ' . $deviceDetector->getOs('version')
             : $deviceDetector->getOs('name');
 
-        $osFamily = str_replace(
-            ' ',
-            '-',
-            strtolower(OperatingSystem::getOsFamily($deviceDetector->getOs('short_name')))
-        );
-        $osFamily = $osFamily == 'gnu/linux' ? 'linux' : $osFamily;
-
-        // "UNK UNK" browser and OS
-        $browserFamily = ($browser == 'UNK UNK') ? 'Unknown' : $browserFamily;
-        $osFamily = ($os == 'UNK UNK') ? 'Unknown' : $osFamily;
+        $osFamily = Str::replaceFirst(' ', '-', Str::lower(OperatingSystem::getOsFamily($deviceDetector->getOs('short_name'))));
+        $osFamily = ($osFamily == 'gnu/linux') ? 'linux' : $osFamily;
+        $osFamily = ($os == 'UNK UNK') ? 'UNK UNK' : $osFamily;
 
         // Whether it's a bot
         $bot = null;

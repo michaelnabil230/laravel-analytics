@@ -5,7 +5,7 @@ namespace MichaelNabil230\LaravelAnalytics\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \MichaelNabil230\LaravelAnalytics\Models\Visiter recordVisit($agent = null, string $event = '')
+ * @method static \MichaelNabil230\LaravelAnalytics\Models\Visiter recordVisiter(string $typeRequest, $agent = null)
  *
  * @see \MichaelNabil230\LaravelAnalytics\LaravelAnalytics
  */

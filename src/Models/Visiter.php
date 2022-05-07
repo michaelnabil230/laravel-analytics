@@ -19,7 +19,9 @@ class Visiter extends Model
      * @var array<string>
      */
     protected $fillable = [
+        'type_request',
         'event',
+        'event_description',
         'session_visiter_id',
         'method',
         'url',

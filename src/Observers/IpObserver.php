@@ -16,6 +16,10 @@ class IpObserver
      */
     public function created(Ip $ip)
     {
+        if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
+            return;
+        }
+
         GetGeoipData::dispatch($ip);
     }
 

@@ -30,6 +30,8 @@ class SessionVisiter extends Model
      */
     protected $fillable = [
         'ip_id',
+        'authenticatable_type',
+        'authenticatable_id',
         'start_at',
         'end_at',
     ];

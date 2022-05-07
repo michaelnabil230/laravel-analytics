@@ -10,13 +10,6 @@
 
 This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
 
-## Support us
-
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/laravel-analytics.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/laravel-analytics)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
 
 ## Installation
 
@@ -43,20 +36,151 @@ This is the contents of the published config file:
 
 ```php
 return [
+
+    'ip_model' => Ip::class,
+    'session_visiter_model' => SessionVisiter::class,
+    'visiter_model' => Visiter::class,
+
+    /*
+     * Which route paths are not trackable?
+     */
+    'ignore_paths' => [
+        // 'api/*',
+    ],
+
+    /*
+     * The Do Not Track Ips is used to disable Analytics for some IP addresses:
+     *
+     *     '127.0.0.1', '192.168.1.1'
+     *
+     * You can set ranges of IPs
+     *     '192.168.0.1-192.168.0.100'
+     *
+     * And use net masks
+     *      127.0.0.0/24 -> range  127.0.0.1 - 127.0.0.255
+     *     '172.17.0.0/255.255.0.0'
+     */
+    'do_not_track_ips' => [
+        '127.0.0.2',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Drivers GeoIp
+    |--------------------------------------------------------------------------
+    |
+    | Should the geoip data be collected?
+    |
+    | Set the geoip driver.
+    |
+    | Supported: "free_geo_ip", "ip_stack"
+    */
+    'geo_ip' => [
+        'enabled' => true,
+        'default' => 'free_geo_ip',
+        'drivers' => [
+            'ip_stack' => [
+                'driver' => MichaelNabil230\LaravelAnalytics\GeoIp\IpStack::class,
+                'options' => [
+                    'api_key' => '',
+                    'headers' => [
+                        // 'X-First' => 'foo',
+                    ],
+                ],
+            ],
+            'free_geo_ip' => [
+                'driver' => MichaelNabil230\LaravelAnalytics\GeoIp\FreeGeoIp::class,
+                'options' => [
+                    'headers' => [
+                        // 'X-First' => 'foo',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    /*
+     * All bot if you want defected one.
+     */
+    'bot_browsers' => [
+        'curl',
+        'python-requests',
+        'python-urllib',
+        'wget',
+        'unk',
+        'perl',
+        'go-http-client',
+    ],
+
+    /*
+     * Laravel internal variables on user authentication and login.
+     */
+    'authentication' => [
+        'guards' => [], // defaults to ['web']
+    ],
 ];
 ```
 
-Optionally, you can publish the views using
+### Register Middleware
 
-```bash
-php artisan vendor:publish --tag="laravel-analytics-views"
+You may register the package middleware in the `app/Http/Kernel.php` file:
+
+```php
+<?php 
+
+namespace App\Http;
+
+use Illuminate\Foundation\Http\Kernel as HttpKernel;
+
+class Kernel extends HttpKernel {
+    /**
+    * The application's route middleware.
+    *
+    * @var array
+    */
+    protected $routeMiddleware = [
+        /**** OTHER MIDDLEWARE ****/
+        'analytics' => \MichaelNabil230\LaravelAnalytics\Middleware\Analytics::class,
+    ];
+}
+```
+
+
+You can add the page view middleware to a specific route group, e.g. `web.php` like so:
+
+
+```php
+Route::middleware('analytics')->group(function () {
+    // ...
+});
+```
+
+Then you can pass `typeRequest` in your routes and default is `web-request` using middleware: 
+
+```php
+Route::middleware('analytics:api-request')->group(function () {
+    // ...
+});
 ```
 
 ## Usage
 
 ```php
-$laravelAnalytics = new MichaelNabil230\LaravelAnalytics();
-echo $laravelAnalytics->echoPhrase('Hello, MichaelNabil230!');
+
+use Illuminate\Support\Carbon;
+use MichaelNabil230\LaravelAnalytics\LaravelAnalyticQueries;
+
+$topEvents = LaravelAnalyticQueries::visiter()
+        ->topEvent()
+        // ->where('event', 'test event')
+        // ->except(['bots', 'ajax'])
+        // ->isBot()
+        // ->isAjax()
+        // ->uniqueSession()
+        // ->uniqueIp()
+        ->period(Carbon::now(), Carbon::now()->subDays(7))
+        ->limit(10)
+        ->get();
 ```
 
 ## Testing

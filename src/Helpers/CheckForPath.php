@@ -15,10 +15,10 @@ class CheckForPath
 
     public function getResult(): bool
     {
-        return $this->isMatchingPath();
+        return $this->hasMatchingPath();
     }
 
-    private function isMatchingPath(): bool
+    private function hasMatchingPath(): bool
     {
         $paths = $this->getPathsByHost($this->host);
 
