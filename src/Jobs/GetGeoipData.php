@@ -37,6 +37,6 @@ class GetGeoipData implements ShouldQueue
             ->getDataFor($this->ip->ip_address)
             ->getFormattedData();
 
-        $this->ip->update($data);
+        $this->ip->update($data->toArray());
     }
 }

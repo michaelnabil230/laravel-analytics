@@ -3,6 +3,7 @@
 namespace MichaelNabil230\LaravelAnalytics\GeoIp;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 
 abstract class Driver
@@ -30,15 +31,16 @@ abstract class Driver
         return null;
     }
 
-    public function getFormattedData(): array
+    public function getFormattedData(): Collection
     {
-        return [
+        return collect([
             'latitude' => $this->latitude() ?: null,
             'longitude' => $this->longitude() ?: null,
             'country' => $this->country() ?: '',
             'country_code' => $this->countryCode() ?: '',
             'city' => $this->city() ?: '',
-        ];
+        ])
+            ->merge($this->additionalData());
     }
 
     abstract protected function getEndpoint(string $ip): string;
@@ -52,4 +54,9 @@ abstract class Driver
     abstract protected function countryCode(): string;
 
     abstract protected function city(): string;
+
+    public function additionalData(): Collection
+    {
+        return collect();
+    }
 }
