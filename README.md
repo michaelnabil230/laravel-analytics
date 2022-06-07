@@ -191,6 +191,17 @@ $topEvents = LaravelAnalyticQueries::topVisiterEvent()
 composer test
 ```
 
+## Support
+<p>
+    <a href="https://www.buymeacoffee.com/michaelnabil230"> 
+         <img align="left" src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="50" width="210" alt="michaelnabil230" />
+    </a>
+    <a href="https://ko-fi.com/michaelnabil230"> 
+        <img align="left" src="https://cdn.ko-fi.com/cdn/kofi3.png?v=3" height="50" width="210" alt="michaelnabil230" />
+    </a>
+</p>
+<br><br>
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
